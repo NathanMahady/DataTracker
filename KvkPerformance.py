@@ -61,7 +61,7 @@ result_df.rename(columns={'Power': 'Power Change', 'TotalDeads': 'Deads'}, inpla
 result_df = result_df[['Username', 'ID', 'Starting Power', 'Power Change', 'KP', 'Deads', 'T1', 'T2', 'T3', 'T4', 'T5']]
 
 # Export the resulting DataFrame to a new CSV file
-output_file = 'players_difference_with_starting_power.csv'
+output_file = 'players_difference.csv'
 result_df.to_csv(output_file, index=False, encoding='utf-8')
 
-print(f'Difference file created with starting power: {output_file}')
+print(f'file created with starting power: {output_file}')

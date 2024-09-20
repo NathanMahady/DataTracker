@@ -22,7 +22,10 @@ warnings.filterwarnings("ignore")
 def captureScreenShots(numProfiles=10, startFrom=0, skipStart=False):
     playerNames = []
     # Skip the players with power ranking in this list
-    skipTrackerPlayerProfile = [244]
+    skipTrackerPlayerProfile = [235]
+
+    # Only needed the first time running this 
+    
     #createEmptyNameFile()
     #makeProfileDirectory()
 
@@ -60,19 +63,22 @@ def captureScreenShots(numProfiles=10, startFrom=0, skipStart=False):
             i += 1
 
     while i < numProfiles:
-        if keyboard.is_pressed('esc'):  # Check if the hotkey is pressed
+        # Exits loop if esc is pressed
+        if keyboard.is_pressed('esc'): 
             print("Hotkey pressed, stopping script.")
             return  # Exit the function to stop the script    
         NavProfile.clickProfile(wait=0.5)  
         
         # Code that checks if current player ranking is in skipTrackerPlayerProfile 
-        # and skips clicking name if it is.
+        # and skips clicking name if it is to avoid repeating
         
         if i+1 in skipTrackerPlayerProfile:
             time.sleep(1)
             screenshotProfile(counter=i)
             with open('playerNames.txt', 'a', encoding='utf-8') as file:
                 file.write("\n")
+
+            # Adding a placehold name for the skipped player
             playerNames.append("")
             NavProfile.clickKillTiers()
             screenshotKillTiers(counter=i, wait=0.5)
@@ -86,9 +92,10 @@ def captureScreenShots(numProfiles=10, startFrom=0, skipStart=False):
         NavProfile.copyName(wait=0.8) 
         
         currUser = pyperclip.paste()
-        
+
+        # Scrolls back up one player to try screenshot the missed player
         if currUser in playerNames:
-            print(f"SKipped {currUser}")
+            print(f"Skipped {currUser}")
             NavProfile.closeProfile(wait=1)
             NavProfile.scrollUp()
             continue
@@ -106,11 +113,6 @@ def captureScreenShots(numProfiles=10, startFrom=0, skipStart=False):
         NavProfile.closeMoreInfo(0)
         NavProfile.closeProfile(0.3)
         i += 1
-        
-    # Writing the list to a text file
-    # with open('playerNames.txt', 'a', encoding='utf-8') as file:
-    #     for name in playerNames:
-    #         file.write(f"{name}\n")
 
 def extractDataFromProfiles(numProfiles=5):
     profilesPaths = []
@@ -135,13 +137,14 @@ def extractDataFromKillTiers(numProfiles=5, kp_list=None):
     killTiersPaths = []
     for i in range(0, numProfiles):
         killTiersPaths.append(f"KillTiers\\screenshot-{i}.png")     
-    # killTiers = ImageToData.process_images(killTiersPaths, ImageToData.returnPlayerKillTiers())
     killTiers = ImageToData.process_images(killTiersPaths, ImageToData.returnPlayerKillTiers, kp_list)
     return killTiers
 
-def dataToCSV(player_ids, power, kp, deads, killTiers):
+def dataToCSV(player_ids, power, kp, deads, killTiers, numProfiles):
     with open('playerNames.txt', 'r', encoding='utf-8') as file:
         playerNames = [line.strip() for line in file.readlines()]
+
+    playerNames = playerNames[0:numProfiles]
     
     data = {
         'Username': playerNames,
@@ -158,23 +161,22 @@ def dataToCSV(player_ids, power, kp, deads, killTiers):
 
     df = pd.DataFrame(data)
 
-    # Display the DataFrame (optional)
-    print(df)
+    # Sample top of dataframe
+    print(df.head())
 
     # Save the DataFrame to a CSV file
     df.to_csv('players_data.csv', index=False, encoding='utf-8')
 
 def main():
-    # for i in range(2): 
-    #     print(returnMousePosition("Right click for coords"))
-
+    numProfiles = 5
     
-    numProfiles = 300
     # captureScreenShots(numProfiles=numProfiles, startFrom=219, skipStart=True)
-#     captureScreenShots(numProfiles=numProfiles)
+    # captureScreenShots(numProfiles=numProfiles)
+    
     player_ids, power, kp = extractDataFromProfiles(numProfiles=numProfiles)
     deads = extractDataFromDeads(numProfiles=numProfiles)
-    
+
+    # Checks if kp was extracted from the images above, if not it uses the kp already in players_data
     if 'kp' in vars():
         killTiers = extractDataFromKillTiers(numProfiles, kp)        
     else:
@@ -183,12 +185,7 @@ def main():
         kp = df['KP'].tolist()
         killTiers = extractDataFromKillTiers(numProfiles, kp)
         
-    dataToCSV(player_ids, power, kp, deads, killTiers)
-#     with open("1093.csv", 'w', newline='', encoding='utf-8') as file:
-#         writer = csv.writer(file)
-
-#         # Write each list as a row in the CSV
-#         writer.writerows(killTiers)
+    dataToCSV(player_ids, power, kp, deads, killTiers, numProfiles)
 
 if __name__ == "__main__":
     print("Press 'Esc' to stop the script.")

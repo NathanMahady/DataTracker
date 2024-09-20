@@ -71,6 +71,7 @@ def is_valid_number(value):
     except ValueError:
         return False
 
+# autocorrect uses both OCRs to try and match the kp to tiers kills by trying different combinations from each OCR
 def autocorrect_tiers(easy_ocr_tiers, tesseract_tiers, actual_kp):
     print(f"easy_ocr_tiers: {easy_ocr_tiers}")
     print(f"tesseract_tiers:{tesseract_tiers}")
@@ -113,6 +114,3 @@ def autocorrect_tiers(easy_ocr_tiers, tesseract_tiers, actual_kp):
     # If none of the combinations matcked actual kp
     print("Could not match actual kp :(")
     return ["", "", "", "", ""]
-
-    
-print(returnPlayerKillTiers(f"KillTiers/screenshot-{104}.png"))
